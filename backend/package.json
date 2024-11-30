@@ -1,5 +1,5 @@
 {
-  "name": "auth-kit-server",
+  "name": "N'ry Tech server",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -20,6 +20,7 @@
     "mongoose": "^8.3.2",
     "nodemailer": "^6.9.13",
     "nodemailer-express-handlebars": "^6.1.2",
+    "nodemailer-smtp-transport": "^2.7.4",
     "nodemon": "^3.1.0"
   }
 }

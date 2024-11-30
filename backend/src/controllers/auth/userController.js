@@ -224,7 +224,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   // create a verification token using the user id --->
   const verificationToken = crypto.randomBytes(64).toString("hex") + user._id;
 
-  // hast the verification token
+  // hash the verification token
   const hashedToken = hashToken(verificationToken);
 
   await new Token({
@@ -238,7 +238,7 @@ export const verifyEmail = asyncHandler(async (req, res) => {
   const verificationLink = `${process.env.CLIENT_URL}/verify-email/${verificationToken}`;
 
   // send email
-  const subject = "Email Verification - AuthKit";
+  const subject = "Email Verification - Task master";
   const send_to = user.email;
   const reply_to = "noreply@gmail.com";
   const template = "emailVerification";
@@ -334,7 +334,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetLink = `${process.env.CLIENT_URL}/reset-password/${passwordResetToken}`;
 
   // send email to user
-  const subject = "Password Reset - AuthKit";
+  const subject = "Password Reset - N'rycTech";
   const send_to = user.email;
   const send_from = process.env.USER_EMAIL;
   const reply_to = "noreply@noreply.com";
@@ -409,5 +409,59 @@ export const changePassword = asyncHandler(async (req, res) => {
     return res.status(200).json({ message: "Password changed successfully" });
   } else {
     return res.status(400).json({ message: "Password could not be changed!" });
+  }
+});
+
+
+
+export const addUserByAdmin = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+      res.status(400).json({ message: "Email is required" });
+      return;
+  }
+
+  // Check if user already exists
+  const userExists = await User.findOne({ email });
+  if (userExists) {
+      res.status(400).json({ message: "User already exists" });
+      return;
+  }
+
+  // Generate default password
+  const defaultPassword = email; // You can use a random generator for more security
+  const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+  // Create the user
+  const user = await User.create({
+      email,
+      password: "123456",
+      role: "user", // Default role
+  });
+
+  // Send email with login details (optional)
+  const message = `
+      Hello,
+
+      Your account has been created. Here are your login details:
+      Email: ${email}
+      Password: ${defaultPassword}
+
+      Please log in and change your password.
+
+      Thank you!
+  `;
+
+  try {
+      await sendEmail({
+          to: email,
+          subject: "Account Created",
+          text: message,
+
+      });
+      res.status(201).json({ message: "User created and email sent" });
+  } catch (error) {
+      res.status(500).json({ message: "User created but email failed to send" });
   }
 });

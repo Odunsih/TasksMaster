@@ -3,7 +3,7 @@ import TaskModel from "../../models/tasks/Taskmodels.js"
 
 export const createTask = asyncHandler(async (req, res) => {
     try {
-        const { title, description, dueDate, priority, status } = req.body;
+        const { title, description, dueDate, priority, status, assignedTo } = req.body;
 
         if (!title || title.trim() === "") {
         res.status(400).json({ message: "Title is required" });
@@ -19,6 +19,7 @@ export const createTask = asyncHandler(async (req, res) => {
                 dueDate,
                 priority,
                 status,
+                assignedTo, // Assign task to another user
                 user: req.user._id,
             });
 
@@ -29,6 +30,7 @@ export const createTask = asyncHandler(async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 });
+
 
 
 export const getTasks = asyncHandler(async (req, res) => {
@@ -83,13 +85,17 @@ export const getTask = asyncHandler(async (req, res) => {
 
 export const updateTask = asyncHandler(async (req, res) => {
     try {
-        const userId = req.user._id;
+        // const userId = req.user._id;
+        if (!req.user || !req.user._id) {
+            return res.status(401).json({ message: "Not authorized, user not found" });
+        }
 
+        const userId = req.user._id;
         const { id } = req.params;
         const { title, description, dueDate, priority, status, completed } = req.body;
 
         if (!id) {
-            res.status(400).json({ message: "Please provide a task id" });
+            return  res.status(400).json({ message: "Please provide a task id" });
         }
 
         const task = await TaskModel.findById(id);

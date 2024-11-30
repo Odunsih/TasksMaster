@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, "Please provide your name"],
+      required: [false, "Please provide your name"],
     },
 
     email: {
@@ -36,13 +36,21 @@ const UserSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ["user", "admin", "creator"],
-      default: "user",
+      default: "admin",
     },
 
     isVerified: {
       type: Boolean,
       default: false,
     },
+
+    title: { type: String, required: false },
+    description: { type: String, required: false },
+    dueDate: { type: Date },
+    priority: { type: String, enum: ["low", "medium", "high"], default: "medium" },
+    status: { type: String, enum: ["pending", "in-progress", "completed"], default: "pending" },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // New field
   },
   { timestamps: true, minimize: true }
 );

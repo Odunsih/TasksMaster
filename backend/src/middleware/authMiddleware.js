@@ -9,22 +9,22 @@ export const protect = asyncHandler(async (req, res, next) => {
 
     if (!token) {
       // 401 Unauthorized
-      res.status(401).json({ message: "Not authorized, please login!" });
+      return res.status(401).json({ message: "Not authorized, please login!" });
     }
 
     // verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+    
     // get user details from the token ----> exclude password
-    const user = await User.findById(decoded.id).select("-password");
-
+     req.user = await User.findById(decoded.id).select("-password");
+    
     // check if user exists
-    if (!user) {
+    if (!req.user) {
       res.status(404).json({ message: "User not found!" });
     }
 
     // set user details in the request object
-    req.user = user;
+    // req.user = user;
 
     next();
   } catch (error) {
@@ -67,3 +67,25 @@ export const verifiedMiddleware = asyncHandler(async (req, res, next) => {
   // if not verified, send 403 Forbidden --> terminate the request
   res.status(403).json({ message: "Please verify your email address!" });
 });
+
+
+// edit profile
+export const authenticateUser = async (req, res, next) => {
+  try {
+      const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+      if (!token) {
+          return res.status(401).json({ message: 'No token provided, authorization denied' });
+      }
+
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await UserModel.findById(decoded.id).select('-password');
+
+      if (!req.user) {
+          return res.status(401).json({ message: 'User not found' });
+      }
+
+      next();
+  } catch (error) {
+      res.status(401).json({ message: 'Token is not valid' });
+  }
+};
